@@ -85,7 +85,7 @@ namespace Mopups.Platforms.iOS
                 // the status bar at the top, so read the status-bar height directly instead.
                 var systemPadding = new Thickness
                 {
-                    Top = StatusBarHeight(handler),
+                    Top = TopInset(handler),
                     Bottom = handler.KeyboardBounds.Height
                 };
 
@@ -97,6 +97,15 @@ namespace Mopups.Platforms.iOS
                     currentElement.Layout(new Rect(currentElement.X, currentElement.Y, superviewFrame.Width, superviewFrame.Height));
                     currentElement.BatchCommit();
                 }
+            }
+
+            // A floating iPadOS window sits clear of the status bar, so its own top safe-area inset is the
+            // smaller of the two. Elsewhere the status bar is never taller, so the padding doesn't change.
+            static double TopInset(UIViewController controller)
+            {
+                var statusBarHeight = StatusBarHeight(controller);
+                var window = controller.View?.Window;
+                return window == null ? statusBarHeight : Math.Min(statusBarHeight, window.SafeAreaInsets.Top);
             }
 
             static double StatusBarHeight(UIViewController controller)
